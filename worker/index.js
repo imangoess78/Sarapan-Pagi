@@ -86,10 +86,12 @@ export default {
         if (request.method === 'POST') {
           const body = await request.json();
           const id = 'p' + nanoid();
+          const stok_awal = body.stok_awal ?? body.stok ?? 0;
+          const stok_sisa = body.stok_sisa ?? stok_awal;
           await db.prepare(
-            'INSERT INTO produk (id, konsinyator_id, nama, harga) VALUES (?, ?, ?, ?)'
-          ).bind(id, body.konsinyator_id, body.nama, body.harga).run();
-          return json({ id, ...body }, 201);
+            'INSERT INTO produk (id, konsinyator_id, nama, harga, stok_awal, stok_sisa) VALUES (?, ?, ?, ?, ?, ?)'
+          ).bind(id, body.konsinyator_id, body.nama, body.harga, stok_awal, stok_sisa).run();
+          return json({ id, ...body, stok_awal, stok_sisa }, 201);
         }
       }
 
@@ -98,9 +100,11 @@ export default {
         const id = mProduk[1];
         if (request.method === 'PUT') {
           const body = await request.json();
+          const stok_awal = body.stok_awal ?? body.stok ?? 0;
+          const stok_sisa = body.stok_sisa ?? stok_awal;
           await db.prepare(
-            'UPDATE produk SET nama=?, harga=?, konsinyator_id=? WHERE id=?'
-          ).bind(body.nama, body.harga, body.konsinyator_id, id).run();
+            'UPDATE produk SET nama=?, harga=?, konsinyator_id=?, stok_awal=?, stok_sisa=? WHERE id=?'
+          ).bind(body.nama, body.harga, body.konsinyator_id, stok_awal, stok_sisa, id).run();
           return json({ ok: true });
         }
         if (request.method === 'DELETE') {

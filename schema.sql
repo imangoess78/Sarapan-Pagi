@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS produk (
   konsinyator_id TEXT NOT NULL,
   nama TEXT NOT NULL,
   harga INTEGER NOT NULL,
+  stok_awal INTEGER NOT NULL DEFAULT 0,
+  stok_sisa INTEGER NOT NULL DEFAULT 0,
   FOREIGN KEY (konsinyator_id) REFERENCES konsinyator(id) ON DELETE CASCADE
 );
 
