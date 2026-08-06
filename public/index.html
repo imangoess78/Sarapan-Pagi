@@ -2,245 +2,250 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Lapak Jajan Sarapan Pagi Bintaro</title>
+<meta name="description" content="Cek data penjualan lapak jajan sarapan pagi Bintaro untuk konsinyator."/>
 <link rel="icon" href="/favicon.ico"/>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Segoe UI",sans-serif;background:#fdf6ec;color:#333;min-height:100vh}
-header{background:#e65c00;color:#fff;padding:14px 24px;display:flex;align-items:center;gap:12px}
-header h1{font-size:1.2rem;font-weight:700}
-header span{font-size:.85rem;opacity:.8}
-nav{background:#fff;border-bottom:2px solid #e65c00;display:flex;overflow-x:auto}
-nav button{padding:12px 20px;border:none;background:none;cursor:pointer;font-size:.9rem;font-weight:600;color:#666;border-bottom:3px solid transparent;white-space:nowrap}
-nav button.active{color:#e65c00;border-bottom-color:#e65c00}
-nav button:hover:not(.active){background:#fdf6ec}
-main{padding:20px;max-width:1100px;margin:0 auto}
-.section{display:none}.section.active{display:block}
-.card{background:#fff;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:20px;margin-bottom:20px}
-.card h2{font-size:1rem;font-weight:700;color:#e65c00;margin-bottom:14px}
-.form-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;align-items:flex-end}
-.form-row label{display:flex;flex-direction:column;gap:4px;font-size:.8rem;font-weight:600;flex:1;min-width:140px}
-.form-row input,.form-row select,.form-row textarea{padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:.9rem;width:100%}
-.form-row textarea{resize:vertical;min-height:60px}
-.btn{padding:8px 16px;border:none;border-radius:6px;font-size:.85rem;font-weight:600;cursor:pointer}
-.btn-primary{background:#e65c00;color:#fff}.btn-sm{padding:5px 10px;font-size:.78rem}
-.btn-edit{background:#3b82f6;color:#fff}.btn-del{background:#ef4444;color:#fff}
-.btn-success{background:#22c55e;color:#fff}.btn-warn{background:#f59e0b;color:#fff}
-.btn-ghost{background:#f3f4f6;color:#333}
-table{width:100%;border-collapse:collapse;font-size:.85rem}
-th{background:#fdf6ec;text-align:left;padding:9px 10px;font-weight:700;border-bottom:2px solid #e9d5b3}
-td{padding:8px 10px;border-bottom:1px solid #f0e8d8;vertical-align:middle}
-tr:hover td{background:#fef9f0}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.72rem;font-weight:700}
-.badge-baru{background:#dbeafe;color:#1d4ed8}.badge-proses{background:#fef9c3;color:#854d0e}
-.badge-siap{background:#dcfce7;color:#15803d}.badge-selesai{background:#f3f4f6;color:#6b7280}
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px}
-.stat{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.08);text-align:center}
-.stat .val{font-size:1.5rem;font-weight:800;color:#e65c00}.stat .lbl{font-size:.78rem;color:#888;margin-top:4px}
-.empty{text-align:center;padding:30px;color:#aaa;font-style:italic}
-.toast{position:fixed;bottom:20px;right:20px;background:#333;color:#fff;padding:10px 18px;border-radius:8px;font-size:.85rem;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
-.toast.show{opacity:1}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal{background:#fff;border-radius:12px;padding:24px;width:min(480px,92vw);max-height:90vh;overflow-y:auto}
-.modal h3{font-size:1rem;font-weight:700;color:#e65c00;margin-bottom:16px}
-.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
-@media(max-width:600px){.form-row label{min-width:100%}}
-</style></head><body>
-<div class="toast" id="toast"></div>
-<header>
-  <img src="/icon-192.png" alt="" style="width:36px;height:36px;border-radius:8px"/>
-  <div><h1>Lapak Jajan Sarapan Pagi Bintaro</h1><span>Manajemen Konsinyasi &amp; Pesanan</span></div>
+  :root{--green:#6BBF6B;--green-dark:#4a9e4a;--green-light:#f0fdf4;}
+  body{background:var(--green-light);font-family:'Segoe UI',system-ui,sans-serif;}
+  .btn-primary{background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-weight:600;cursor:pointer;transition:.15s;}
+  .btn-primary:hover{background:var(--green-dark);}
+  .card{background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);padding:20px;}
+  .badge-lunas{background:#dcfce7;color:#166534;font-size:12px;padding:2px 8px;border-radius:999px;font-weight:600;}
+  .badge-belum{background:#fef9c3;color:#854d0e;font-size:12px;padding:2px 8px;border-radius:999px;font-weight:600;}
+</style>
+</head>
+<body>
+<!-- HEADER -->
+<header style="background:var(--green)" class="text-white shadow-md">
+  <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <img src="/apple-touch-icon.png" class="w-10 h-10 rounded-full object-cover border-2 border-white" onerror="this.style.display='none'"/>
+      <div>
+        <div class="font-bold text-lg leading-tight">Lapak Jajan Sarapan Pagi</div>
+        <div class="text-green-100 text-sm">Bintaro — Portal Konsinyator</div>
+      </div>
+    </div>
+    <a href="/admin.html" class="bg-white text-green-700 font-semibold text-sm px-4 py-2 rounded-lg hover:bg-green-50 transition">Admin Login</a>
+  </div>
 </header>
-<nav id="nav">
-  <button class="active" data-tab="dashboard">Dashboard</button>
-  <button data-tab="konsinyator">Konsinyator</button>
-  <button data-tab="produk">Produk</button>
-  <button data-tab="transaksi">Transaksi</button>
-  <button data-tab="pesanan">Pesanan</button>
-</nav>
-<main>
-<div id="sec-dashboard" class="section active">
-  <div class="stat-grid" id="stats"></div>
-  <div class="card"><h2>Transaksi Hari Ini</h2><div id="dash-trx"><div class="empty">Memuat...</div></div></div>
+
+<!-- HERO -->
+<div class="max-w-3xl mx-auto px-4 py-8">
+  <div class="card mb-6">
+    <h2 class="text-xl font-bold text-gray-800 mb-1">Cek Data Penjualan</h2>
+    <p class="text-gray-500 text-sm mb-4">Masukkan nama konsinyator untuk melihat detail penjualan Anda.</p>
+    <div class="flex gap-2">
+      <input id="searchInput" type="text" placeholder="Cari nama konsinyator..."
+        class="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-green-500"
+        onkeydown="if(event.key==='Enter')cariKonsinyator()"/>
+      <button class="btn-primary" onclick="cariKonsinyator()">Cari</button>
+    </div>
+    <!-- Autocomplete dropdown -->
+    <div id="dropdown" class="hidden mt-1 border border-gray-200 rounded-lg bg-white shadow-lg max-h-48 overflow-y-auto z-10 relative"></div>
+  </div>
+
+  <!-- HASIL -->
+  <div id="hasil" class="hidden">
+    <!-- Info konsinyator -->
+    <div id="infoKonsinyator" class="card mb-4"></div>
+
+    <!-- Date range filter -->
+    <div class="card mb-4">
+      <div class="flex flex-wrap gap-3 items-center">
+        <div>
+          <label class="text-xs text-gray-500 block mb-1">Dari Tanggal</label>
+          <input type="date" id="tglDari" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-green-500"/>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 block mb-1">Sampai Tanggal</label>
+          <input type="date" id="tglSampai" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-green-500"/>
+        </div>
+        <div class="flex items-end">
+          <button class="btn-primary text-sm py-1.5" onclick="filterTransaksi()">Filter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ringkasan -->
+    <div id="ringkasan" class="grid grid-cols-2 gap-3 mb-4 sm:grid-cols-4"></div>
+
+    <!-- Tabel transaksi -->
+    <div class="card">
+      <h3 class="font-bold text-gray-700 mb-3">Detail Transaksi</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-100">
+              <th class="text-left py-2 px-1 text-gray-500 font-medium">Tanggal</th>
+              <th class="text-left py-2 px-1 text-gray-500 font-medium">Produk</th>
+              <th class="text-right py-2 px-1 text-gray-500 font-medium">Qty</th>
+              <th class="text-right py-2 px-1 text-gray-500 font-medium">Total</th>
+              <th class="text-right py-2 px-1 text-gray-500 font-medium">Setoran</th>
+              <th class="text-center py-2 px-1 text-gray-500 font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody id="tabelTransaksi"></tbody>
+        </table>
+        <div id="emptyTransaksi" class="hidden text-center text-gray-400 py-8 text-sm">Belum ada transaksi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div id="emptyState" class="text-center py-12 text-gray-400">
+    <div class="text-5xl mb-3">🥘</div>
+    <div class="font-medium">Masukkan nama konsinyator di atas</div>
+    <div class="text-sm mt-1">Sistem konsinyasi • 10% bagi hasil lapak • 90% setoran konsinyator</div>
+  </div>
+
+  <div id="notFound" class="hidden text-center py-12 text-gray-400">
+    <div class="text-5xl mb-3">🔍</div>
+    <div class="font-medium">Konsinyator tidak ditemukan</div>
+    <div class="text-sm mt-1">Coba periksa ejaan nama Anda</div>
+  </div>
 </div>
-<div id="sec-konsinyator" class="section">
-  <div class="card"><h2>Tambah Konsinyator</h2><div class="form-row">
-    <label>Nama<input id="k-nama" placeholder="Nama lengkap"/></label>
-    <label>No HP<input id="k-hp" placeholder="08xxx"/></label>
-    <button class="btn btn-primary" onclick="addKons()">+ Tambah</button>
-  </div></div>
-  <div class="card"><h2>Daftar Konsinyator</h2><div id="tbl-konsinyator"><div class="empty">Memuat...</div></div></div>
-</div>
-<div id="sec-produk" class="section">
-  <div class="card"><h2>Tambah Produk</h2><div class="form-row">
-    <label>Konsinyator<select id="p-kons"><option value="">Pilih...</option></select></label>
-    <label>Nama Produk<input id="p-nama" placeholder="Nama produk"/></label>
-    <label>Harga (Rp)<input id="p-harga" type="number" placeholder="0"/></label>
-    <label>Stok Awal<input id="p-stok" type="number" placeholder="0"/></label>
-    <button class="btn btn-primary" onclick="addProduk()">+ Tambah</button>
-  </div></div>
-  <div class="card"><h2>Daftar Produk</h2><div id="tbl-produk"><div class="empty">Memuat...</div></div></div>
-</div>
-<div id="sec-transaksi" class="section">
-  <div class="card"><h2>Catat Penjualan</h2><div class="form-row">
-    <label>Produk<select id="t-produk"><option value="">Pilih...</option></select></label>
-    <label>Qty<input id="t-qty" type="number" value="1" min="1"/></label>
-    <button class="btn btn-primary" onclick="addTrx()">+ Catat</button>
-  </div></div>
-  <div class="card"><h2>Riwayat Transaksi</h2><div id="tbl-transaksi"><div class="empty">Memuat...</div></div></div>
-</div>
-<div id="sec-pesanan" class="section">
-  <div class="card"><h2>Tambah Pesanan</h2><div class="form-row">
-    <label>Nama Customer<input id="o-nama" placeholder="Nama pemesan"/></label>
-    <label>No WA<input id="o-wa" placeholder="08xxx"/></label>
-    <label>Produk / Deskripsi<input id="o-produk" placeholder="Nasi uduk x5..."/></label>
-    <label>Qty<input id="o-qty" type="number" value="1" min="1"/></label>
-    <label>Catatan<input id="o-catatan" placeholder="Pedas dipisah..."/></label>
-    <button class="btn btn-primary" onclick="addPesanan()">+ Tambah</button>
-  </div></div>
-  <div class="card"><h2>Daftar Pesanan</h2><div id="tbl-pesanan"><div class="empty">Memuat...</div></div></div>
-</div>
-</main>
-<div class="modal-overlay" id="modal-kons"><div class="modal"><h3>Edit Konsinyator</h3>
-  <div class="form-row"><label>Nama<input id="ek-nama"/></label><label>No HP<input id="ek-hp"/></label></div>
-  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-kons')">Batal</button><button class="btn btn-primary" onclick="saveKons()">Simpan</button></div>
-</div></div>
-<div class="modal-overlay" id="modal-produk"><div class="modal"><h3>Edit Produk</h3>
-  <div class="form-row"><label>Nama<input id="ep-nama"/></label><label>Harga<input id="ep-harga" type="number"/></label></div>
-  <div class="form-row"><label>Stok Awal<input id="ep-stok-awal" type="number"/></label><label>Stok Sisa<input id="ep-stok-sisa" type="number"/></label></div>
-  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-produk')">Batal</button><button class="btn btn-primary" onclick="saveProduk()">Simpan</button></div>
-</div></div>
-<div class="modal-overlay" id="modal-pesanan"><div class="modal"><h3>Edit Pesanan</h3>
-  <div class="form-row"><label>Nama Customer<input id="eo-nama"/></label><label>No WA<input id="eo-wa"/></label></div>
-  <div class="form-row"><label>Produk<input id="eo-produk"/></label><label>Qty<input id="eo-qty" type="number"/></label></div>
-  <div class="form-row"><label>Catatan<input id="eo-catatan"/></label></div>
-  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-pesanan')">Batal</button><button class="btn btn-primary" onclick="savePesanan()">Simpan</button></div>
-</div></div>
+
 <script>
-const API="";
-let _editId=null;
-function toast(msg,ok=true){const t=document.getElementById("toast");t.textContent=msg;t.style.background=ok?"#333":"#dc2626";t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2800);}
-function openModal(id){document.getElementById(id).classList.add("open");}
-function closeModal(id){document.getElementById(id).classList.remove("open");}
-async function api(path,method="GET",body){const o={method,headers:{"Content-Type":"application/json"}};if(body)o.body=JSON.stringify(body);const r=await fetch(API+path,o);const d=await r.json();if(!r.ok)throw new Error(d.error||"Error");return d;}
-function rp(n){return"Rp "+Number(n).toLocaleString("id-ID");}
-document.getElementById("nav").addEventListener("click",e=>{if(!e.target.dataset.tab)return;document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));e.target.classList.add("active");document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.getElementById("sec-"+e.target.dataset.tab).classList.add("active");loadTab(e.target.dataset.tab);});
-function loadTab(t){if(t==="dashboard")loadDashboard();else if(t==="konsinyator")loadKons();else if(t==="produk")loadProduk();else if(t==="transaksi")loadTrx();else if(t==="pesanan")loadPesanan();}
-// DASHBOARD
-async function loadDashboard(){
-  try{
-    const[trx,prod,pes]=await Promise.all([api("/api/transaksi"),api("/api/produk"),api("/api/pesanan")]);
-    const today=new Date().toISOString().slice(0,10);
-    const todayTrx=trx.filter(t=>t.tanggal===today);
-    const omzet=todayTrx.reduce((s,t)=>s+t.total,0);
-    const bagi=todayTrx.reduce((s,t)=>s+t.bagi_hasil,0);
-    const setoran=todayTrx.reduce((s,t)=>s+t.setoran,0);
-    document.getElementById("stats").innerHTML=`
-      <div class="stat"><div class="val">${todayTrx.length}</div><div class="lbl">Transaksi Hari Ini</div></div>
-      <div class="stat"><div class="val">${rp(omzet)}</div><div class="lbl">Omzet Hari Ini</div></div>
-      <div class="stat"><div class="val">${rp(bagi)}</div><div class="lbl">Bagi Hasil</div></div>
-      <div class="stat"><div class="val">${rp(setoran)}</div><div class="lbl">Setoran</div></div>
-      <div class="stat"><div class="val">${prod.length}</div><div class="lbl">Total Produk</div></div>
-      <div class="stat"><div class="val">${pes.filter(p=>p.status==="baru").length}</div><div class="lbl">Pesanan Baru</div></div>
-    `;
-    const tbody=todayTrx.length?todayTrx.map(t=>`<tr><td>${t.tanggal}</td><td>${t.produk_id}</td><td>${t.qty}</td><td>${rp(t.total)}</td><td>${rp(t.bagi_hasil)}</td><td>${rp(t.setoran)}</td><td>${t.paid?"<span class='badge badge-siap'>Lunas</span>":"<span class='badge badge-baru'>Belum</span>"}</td></tr>`).join(""):"";
-    document.getElementById("dash-trx").innerHTML=todayTrx.length?`<table><thead><tr><th>Tgl</th><th>Produk</th><th>Qty</th><th>Total</th><th>Bagi Hasil</th><th>Setoran</th><th>Status</th></tr></thead><tbody>${tbody}</tbody></table>`:"<div class='empty'>Belum ada transaksi hari ini</div>";
-  }catch(e){toast(e.message,false);}
+const fmt = n => 'Rp ' + (n||0).toLocaleString('id-ID');
+let allKonsinyator = [];
+let selectedKonsinyator = null;
+let allTransaksi = [];
+
+async function loadKonsinyator() {
+  try {
+    const res = await fetch('/api/konsinyator');
+    allKonsinyator = await res.json();
+  } catch(e) { console.error(e); }
 }
-// KONSINYATOR
-async function loadKons(){
-  try{const data=await api("/api/konsinyator");
-    document.getElementById("tbl-konsinyator").innerHTML=data.length?`<table><thead><tr><th>Nama</th><th>No HP</th><th>Bergabung</th><th>Aksi</th></tr></thead><tbody>${data.map(k=>`<tr><td>${k.nama}</td><td>${k.hp}</td><td>${k.created_at}</td><td><button class="btn btn-sm btn-edit" onclick="editKons('${k.id}','${k.nama}','${k.hp}')">Edit</button> <button class="btn btn-sm btn-del" onclick="delKons('${k.id}')">Hapus</button></td></tr>`).join("")}</tbody></table>`:"<div class='empty'>Belum ada data</div>";
-  }catch(e){toast(e.message,false);}
+
+function cariKonsinyator() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!q) return;
+  const found = allKonsinyator.filter(k => k.nama.toLowerCase().includes(q));
+  if (found.length === 1) {
+    pilihKonsinyator(found[0]);
+  } else if (found.length > 1) {
+    tampilDropdown(found);
+  } else {
+    document.getElementById('hasil').classList.add('hidden');
+    document.getElementById('emptyState').classList.add('hidden');
+    document.getElementById('notFound').classList.remove('hidden');
+  }
 }
-async function addKons(){
-  const nama=document.getElementById("k-nama").value.trim();
-  const hp=document.getElementById("k-hp").value.trim();
-  if(!nama||!hp){toast("Nama & HP wajib diisi",false);return;}
-  try{await api("/api/konsinyator","POST",{nama,hp});document.getElementById("k-nama").value="";document.getElementById("k-hp").value="";toast("Konsinyator ditambahkan");loadKons();}catch(e){toast(e.message,false);}
+
+function tampilDropdown(list) {
+  const dd = document.getElementById('dropdown');
+  dd.innerHTML = list.map(k =>
+    `<div class="px-4 py-2 hover:bg-green-50 cursor-pointer text-sm border-b border-gray-50" onclick="pilihKonsinyator(${JSON.stringify(k).replace(/"/g,'&quot;')})">${k.nama} <span class="text-gray-400">${k.hp}</span></div>`
+  ).join('');
+  dd.classList.remove('hidden');
 }
-function editKons(id,nama,hp){_editId=id;document.getElementById("ek-nama").value=nama;document.getElementById("ek-hp").value=hp;openModal("modal-kons");}
-async function saveKons(){
-  const nama=document.getElementById("ek-nama").value.trim();
-  const hp=document.getElementById("ek-hp").value.trim();
-  if(!nama||!hp){toast("Nama & HP wajib",false);return;}
-  try{await api("/api/konsinyator/"+_editId,"PUT",{nama,hp});closeModal("modal-kons");toast("Disimpan");loadKons();}catch(e){toast(e.message,false);}
+
+async function pilihKonsinyator(k) {
+  selectedKonsinyator = k;
+  document.getElementById('searchInput').value = k.nama;
+  document.getElementById('dropdown').classList.add('hidden');
+  document.getElementById('notFound').classList.add('hidden');
+  document.getElementById('emptyState').classList.add('hidden');
+
+  // Set default date range: this month
+  const today = new Date().toISOString().slice(0,10);
+  const firstDay = today.slice(0,8)+'01';
+  document.getElementById('tglDari').value = firstDay;
+  document.getElementById('tglSampai').value = today;
+
+  await loadTransaksi(k.id, firstDay, today);
+  document.getElementById('hasil').classList.remove('hidden');
 }
-async function delKons(id){if(!confirm("Hapus konsinyator beserta semua produk & transaksinya?"))return;try{await api("/api/konsinyator/"+id,"DELETE");toast("Dihapus");loadKons();}catch(e){toast(e.message,false);}}
-// PRODUK
-async function loadProduk(){
-  try{
-    const[data,kons]=await Promise.all([api("/api/produk"),api("/api/konsinyator")]);
-    const km=Object.fromEntries(kons.map(k=>[k.id,k.nama]));
-    const sel=document.getElementById("p-kons");
-    sel.innerHTML='<option value="">Pilih...</option>'+kons.map(k=>`<option value="${k.id}">${k.nama}</option>`).join("");
-    document.getElementById("tbl-produk").innerHTML=data.length?`<table><thead><tr><th>Nama</th><th>Konsinyator</th><th>Harga</th><th>Stok Awal</th><th>Stok Sisa</th><th>Terjual</th><th>Aksi</th></tr></thead><tbody>${data.map(p=>`<tr><td>${p.nama}</td><td>${km[p.konsinyator_id]||p.konsinyator_id}</td><td>${rp(p.harga)}</td><td>${p.stok_awal}</td><td>${p.stok_sisa}</td><td>${p.terjual}</td><td><button class="btn btn-sm btn-edit" onclick="editProduk('${p.id}','${p.nama}',${p.harga},${p.stok_awal},${p.stok_sisa})">Edit</button> <button class="btn btn-sm btn-del" onclick="delProduk('${p.id}')">Hapus</button></td></tr>`).join("")}</tbody></table>`:"<div class='empty'>Belum ada produk</div>";
-  }catch(e){toast(e.message,false);}
+
+async function loadTransaksi(konsinyatorId, dari, sampai) {
+  try {
+    let url = `/api/transaksi?konsinyator_id=${konsinyatorId}`;
+    const res = await fetch(url);
+    allTransaksi = await res.json();
+    // Filter by date range client-side
+    renderHasil(dari, sampai);
+  } catch(e) { console.error(e); }
 }
-async function addProduk(){
-  const konsinyator_id=document.getElementById("p-kons").value;
-  const nama=document.getElementById("p-nama").value.trim();
-  const harga=document.getElementById("p-harga").value;
-  const stok=document.getElementById("p-stok").value;
-  if(!konsinyator_id||!nama||!harga||!stok){toast("Lengkapi semua field",false);return;}
-  try{await api("/api/produk","POST",{konsinyator_id,nama,harga:Number(harga),stok:Number(stok)});document.getElementById("p-nama").value="";document.getElementById("p-harga").value="";document.getElementById("p-stok").value="";toast("Produk ditambahkan");loadProduk();}catch(e){toast(e.message,false);}
+
+function filterTransaksi() {
+  const dari = document.getElementById('tglDari').value;
+  const sampai = document.getElementById('tglSampai').value;
+  renderHasil(dari, sampai);
 }
-function editProduk(id,nama,harga,stok_awal,stok_sisa){_editId=id;document.getElementById("ep-nama").value=nama;document.getElementById("ep-harga").value=harga;document.getElementById("ep-stok-awal").value=stok_awal;document.getElementById("ep-stok-sisa").value=stok_sisa;openModal("modal-produk");}
-async function saveProduk(){
-  const nama=document.getElementById("ep-nama").value.trim();
-  const harga=document.getElementById("ep-harga").value;
-  const stok_awal=document.getElementById("ep-stok-awal").value;
-  const stok_sisa=document.getElementById("ep-stok-sisa").value;
-  try{await api("/api/produk/"+_editId,"PUT",{nama,harga:Number(harga),stok_awal:Number(stok_awal),stok_sisa:Number(stok_sisa)});closeModal("modal-produk");toast("Disimpan");loadProduk();}catch(e){toast(e.message,false);}
+
+function renderHasil(dari, sampai) {
+  const k = selectedKonsinyator;
+  // Filter transaksi
+  let trx = allTransaksi;
+  if (dari) trx = trx.filter(t => t.tanggal >= dari);
+  if (sampai) trx = trx.filter(t => t.tanggal <= sampai);
+
+  // Info konsinyator
+  document.getElementById('infoKonsinyator').innerHTML = `
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold" style="background:var(--green)">${k.nama[0]}</div>
+      <div>
+        <div class="font-bold text-lg text-gray-800">${k.nama}</div>
+        <div class="text-gray-500 text-sm">📞 ${k.hp} · Bergabung ${k.created_at}</div>
+      </div>
+    </div>`;
+
+  // Ringkasan
+  const totalPenjualan = trx.reduce((a,t)=>a+(t.total||0),0);
+  const totalBagiHasil = trx.reduce((a,t)=>a+(t.bagi_hasil||0),0);
+  const totalSetoran = trx.reduce((a,t)=>a+(t.setoran||0),0);
+  const sudahBayar = trx.filter(t=>t.paid).reduce((a,t)=>a+(t.setoran||0),0);
+
+  document.getElementById('ringkasan').innerHTML = [
+    ['Total Penjualan', fmt(totalPenjualan), '#dcfce7','#166534'],
+    ['Bagi Hasil Lapak (10%)', fmt(totalBagiHasil), '#fef9c3','#854d0e'],
+    ['Setoran Konsinyator (90%)', fmt(totalSetoran), '#dbeafe','#1e40af'],
+    ['Sudah Dibayar', fmt(sudahBayar), '#f3e8ff','#6b21a8'],
+  ].map(([label,val,bg,color])=>`
+    <div class="card" style="background:${bg};padding:14px">
+      <div class="text-xs font-medium mb-1" style="color:${color}">${label}</div>
+      <div class="font-bold text-lg" style="color:${color}">${val}</div>
+    </div>`).join('');
+
+  // Tabel
+  const tbody = document.getElementById('tabelTransaksi');
+  if (trx.length === 0) {
+    tbody.innerHTML = '';
+    document.getElementById('emptyTransaksi').classList.remove('hidden');
+  } else {
+    document.getElementById('emptyTransaksi').classList.add('hidden');
+    tbody.innerHTML = trx.map(t=>`
+      <tr class="border-b border-gray-50 hover:bg-gray-50">
+        <td class="py-2 px-1 text-gray-600">${t.tanggal}</td>
+        <td class="py-2 px-1 font-medium text-gray-800">${t.produk_nama||'-'}</td>
+        <td class="py-2 px-1 text-right text-gray-600">${t.qty}</td>
+        <td class="py-2 px-1 text-right text-gray-800">${fmt(t.total)}</td>
+        <td class="py-2 px-1 text-right text-green-700 font-medium">${fmt(t.setoran)}</td>
+        <td class="py-2 px-1 text-center"><span class="${t.paid?'badge-lunas':'badge-belum'}">${t.paid?'Lunas':'Belum'}</span></td>
+      </tr>`).join('');
+  }
 }
-async function delProduk(id){if(!confirm("Hapus produk beserta transaksinya?"))return;try{await api("/api/produk/"+id,"DELETE");toast("Dihapus");loadProduk();}catch(e){toast(e.message,false);}}
-// TRANSAKSI
-let _prodList=[];
-async function loadTrx(){
-  try{
-    const[trx,prod]=await Promise.all([api("/api/transaksi"),api("/api/produk")]);
-    _prodList=prod;
-    const sel=document.getElementById("t-produk");
-    sel.innerHTML='<option value="">Pilih...</option>'+prod.filter(p=>p.stok_sisa>0).map(p=>`<option value="${p.id}">${p.nama} (sisa ${p.stok_sisa})</option>`).join("");
-    document.getElementById("tbl-transaksi").innerHTML=trx.length?`<table><thead><tr><th>Tgl</th><th>Produk</th><th>Qty</th><th>Total</th><th>Bagi Hasil</th><th>Setoran</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${trx.map(t=>`<tr><td>${t.tanggal}</td><td>${t.produk_id}</td><td>${t.qty}</td><td>${rp(t.total)}</td><td>${rp(t.bagi_hasil)}</td><td>${rp(t.setoran)}</td><td>${t.paid?"<span class='badge badge-siap'>Lunas</span>":"<span class='badge badge-baru'>Belum</span>"}</td><td><button class="btn btn-sm btn-del" onclick="delTrx('${t.id}')">Hapus</button></td></tr>`).join("")}</tbody></table>`:"<div class='empty'>Belum ada transaksi</div>";
-  }catch(e){toast(e.message,false);}
-}
-async function addTrx(){
-  const produk_id=document.getElementById("t-produk").value;
-  const qty=document.getElementById("t-qty").value;
-  if(!produk_id||!qty){toast("Pilih produk & qty",false);return;}
-  try{await api("/api/transaksi","POST",{produk_id,qty:Number(qty)});document.getElementById("t-qty").value="1";toast("Transaksi dicatat");loadTrx();}catch(e){toast(e.message,false);}
-}
-async function delTrx(id){if(!confirm("Hapus transaksi? Stok akan dikembalikan."))return;try{await api("/api/transaksi/"+id,"DELETE");toast("Dihapus");loadTrx();}catch(e){toast(e.message,false);}}
-// PESANAN
-async function loadPesanan(){
-  try{const data=await api("/api/pesanan");
-    document.getElementById("tbl-pesanan").innerHTML=data.length?`<table><thead><tr><th>Customer</th><th>WA</th><th>Produk</th><th>Qty</th><th>Catatan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${data.map(o=>`<tr><td>${o.customer_name}</td><td>${o.wa||"-"}</td><td>${o.product_name}</td><td>${o.qty}</td><td>${o.catatan||"-"}</td><td><select onchange="changeStatus('${o.id}',this.value)" style="border:1px solid #ddd;padding:4px 8px;border-radius:4px;font-size:.8rem"><option value="baru"${o.status==="baru"?" selected":""}>Baru</option><option value="proses"${o.status==="proses"?" selected":""}>Proses</option><option value="siap"${o.status==="siap"?" selected":""}>Siap</option><option value="selesai"${o.status==="selesai"?" selected":""}>Selesai</option></select></td><td><button class="btn btn-sm btn-edit" onclick="editPesanan('${o.id}','${o.customer_name.replace(/'/g,"&apos;")}','${(o.wa||"").replace(/'/g,"&apos;")}','${o.product_name.replace(/'/g,"&apos;")}',${o.qty},'${(o.catatan||"").replace(/'/g,"&apos;")}')">Edit</button> <button class="btn btn-sm btn-del" onclick="delPesanan('${o.id}')">Hapus</button></td></tr>`).join("")}</tbody></table>`:"<div class='empty'>Belum ada pesanan</div>";
-  }catch(e){toast(e.message,false);}
-}
-async function addPesanan(){
-  const customer_name=document.getElementById("o-nama").value.trim();
-  const wa=document.getElementById("o-wa").value.trim();
-  const product_name=document.getElementById("o-produk").value.trim();
-  const qty=document.getElementById("o-qty").value;
-  const catatan=document.getElementById("o-catatan").value.trim();
-  if(!customer_name||!product_name){toast("Nama customer & produk wajib",false);return;}
-  try{await api("/api/pesanan","POST",{customer_name,wa,product_name,qty:Number(qty)||1,catatan});["o-nama","o-wa","o-produk","o-catatan"].forEach(id=>document.getElementById(id).value="");document.getElementById("o-qty").value="1";toast("Pesanan ditambahkan");loadPesanan();}catch(e){toast(e.message,false);}
-}
-async function changeStatus(id,status){try{await api("/api/pesanan/"+id+"/status","PATCH",{status});toast("Status diperbarui");loadPesanan();}catch(e){toast(e.message,false);}}
-function editPesanan(id,nama,wa,produk,qty,catatan){_editId=id;document.getElementById("eo-nama").value=nama;document.getElementById("eo-wa").value=wa;document.getElementById("eo-produk").value=produk;document.getElementById("eo-qty").value=qty;document.getElementById("eo-catatan").value=catatan;openModal("modal-pesanan");}
-async function savePesanan(){
-  const customer_name=document.getElementById("eo-nama").value.trim();
-  const wa=document.getElementById("eo-wa").value.trim();
-  const product_name=document.getElementById("eo-produk").value.trim();
-  const qty=document.getElementById("eo-qty").value;
-  const catatan=document.getElementById("eo-catatan").value.trim();
-  try{await api("/api/pesanan/"+_editId,"PUT",{customer_name,wa,product_name,qty:Number(qty)||1,catatan});closeModal("modal-pesanan");toast("Disimpan");loadPesanan();}catch(e){toast(e.message,false);}
-}
-async function delPesanan(id){if(!confirm("Hapus pesanan ini?"))return;try{await api("/api/pesanan/"+id,"DELETE");toast("Dihapus");loadPesanan();}catch(e){toast(e.message,false);}}
-// Init
-loadDashboard();
+
+// Input search with autocomplete
+document.getElementById('searchInput').addEventListener('input', function(){
+  const q = this.value.trim().toLowerCase();
+  if (!q) { document.getElementById('dropdown').classList.add('hidden'); return; }
+  const found = allKonsinyator.filter(k => k.nama.toLowerCase().includes(q));
+  if (found.length) tampilDropdown(found);
+  else document.getElementById('dropdown').classList.add('hidden');
+});
+
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#searchInput') && !e.target.closest('#dropdown'))
+    document.getElementById('dropdown').classList.add('hidden');
+});
+
+loadKonsinyator();
 </script>
-</body></html>
+</body>
+</html>

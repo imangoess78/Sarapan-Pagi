@@ -131,6 +131,17 @@ export default {
       // ── TRANSAKSI ────────────────────────────────────────────────────────
       if (path === '/api/transaksi') {
         if (method === 'GET') {
+          const konsinyatorId = url.searchParams.get('konsinyator_id');
+          if (konsinyatorId) {
+            const { results } = await DB.prepare(
+              `SELECT t.*, p.nama AS produk_nama
+               FROM transaksi t
+               LEFT JOIN produk p ON p.id = t.produk_id
+               WHERE t.konsinyator_id = ?
+               ORDER BY t.created_at DESC`
+            ).bind(konsinyatorId).all();
+            return json(results);
+          }
           const { results } = await DB.prepare(
             'SELECT * FROM transaksi ORDER BY created_at DESC'
           ).all();

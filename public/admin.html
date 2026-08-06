@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Admin - Lapak Jajan Sarapan Pagi Bintaro</title>
+<link rel="icon" href="/favicon.ico"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{--green:#6BBF6B;--green-dark:#4a9e4a;--green-light:#f0fdf4;}
+body{background:var(--green-light);font-family:'Segoe UI',system-ui,sans-serif;margin:0;padding:0;}
+.btn-primary{background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-weight:600;cursor:pointer;transition:.15s;}
+.btn-primary:hover{background:var(--green-dark);}
+.btn-danger{background:#ef4444;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:500;cursor:pointer;transition:.15s;}
+.btn-danger:hover{background:#dc2626;}
+.btn-secondary{background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:8px;padding:8px 16px;font-weight:500;cursor:pointer;transition:.15s;}
+.btn-secondary:hover{background:#f9fafb;}
+.card{background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);padding:20px;}
+.tab{padding:12px 20px;cursor:pointer;border-bottom:3px solid transparent;font-weight:500;color:#6b7280;transition:.15s;}
+.tab:hover{color:var(--green);}
+.tab.active{border-bottom-color:var(--green);color:var(--green);font-weight:600;}
+.hidden{display:none!important;}
+input,select,textarea{border:1px solid #d1d5db;border-radius:8px;padding:10px 12px;font-size:14px;width:100%;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+table th{text-align:left;padding:10px 8px;color:#6b7280;font-weight:500;border-bottom:2px solid #e5e7eb;}
+table td{padding:10px 8px;border-bottom:1px solid #f3f4f6;}
+table tbody tr:hover{background:#f9fafb;}
+</style>
+</head>
+<body>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="min-h-screen flex items-center justify-center px-4">
+  <div class="card max-w-md w-full">
+    <div class="text-center mb-6">
+      <img src="/apple-touch-icon.png" class="w-16 h-16 mx-auto rounded-full mb-3 object-cover" onerror="this.style.display='none'"/>
+      <h1 class="text-2xl font-bold text-gray-800">Admin Login</h1>
+      <p class="text-gray-500 text-sm mt-1">Lapak Jajan Sarapan Pagi Bintaro</p>
+    </div>
+    <form onsubmit="login(event)">
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+        <input type="text" id="username" required autocomplete="username"/>
+      </div>
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <input type="password" id="password" required autocomplete="current-password"/>
+      </div>
+      <button type="submit" class="btn-primary w-full">Masuk</button>
+    </form>
+    <div class="mt-4 text-center">
+      <a href="/" class="text-sm text-green-600 hover:text-green-700">← Kembali ke Portal Konsinyator</a>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden">
+  <!-- Header -->
+  <header style="background:var(--green)" class="text-white shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="/apple-touch-icon.png" class="w-10 h-10 rounded-full object-cover border-2 border-white" onerror="this.style.display='none'"/>
+        <div>
+          <div class="font-bold text-lg">Lapak Jajan Admin</div>
+          <div class="text-green-100 text-sm">Dashboard Pengelola</div>
+        </div>
+      </div>
+      <button onclick="logout()" class="bg-white text-green-700 font-semibold text-sm px-4 py-2 rounded-lg hover:bg-green-50">Logout</button>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <div class="border-b border-gray-200 bg-white shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto">
+      <div class="tab active" onclick="switchTab('kasir')">💰 Kasir</div>
+      <div class="tab" onclick="switchTab('produk')">📦 Produk</div>
+      <div class="tab" onclick="switchTab('konsinyator')">👤 Konsinyator</div>
+      <div class="tab" onclick="switchTab('laporan')">📊 Laporan</div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="max-w-6xl mx-auto px-4 py-6">
+    <!-- TAB KASIR -->
+    <div id="tabKasir" class="tab-content">
+      <div class="card mb-4">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Input Penjualan Cepat</h2>
+        <form onsubmit="simpanTransaksi(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Konsinyator</label>
+            <select id="kasirKonsinyator" onchange="loadProdukKasir()" required>
+              <option value="">-- Pilih --</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Produk</label>
+            <select id="kasirProduk" onchange="kalkulasiKasir()" required>
+              <option value="">-- Pilih --</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Qty</label>
+            <input type="number" id="kasirQty" min="1" value="1" onchange="kalkulasiKasir()" required/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+            <input type="date" id="kasirTanggal" required/>
+          </div>
+          <div class="md:col-span-2 grid grid-cols-3 gap-3 p-3 bg-green-50 rounded-lg">
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Total</div>
+              <div class="font-bold text-gray-800" id="kasirTotal">Rp 0</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Bagi Hasil (10%)</div>
+              <div class="font-bold text-orange-600" id="kasirBagiHasil">Rp 0</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Setoran (90%)</div>
+              <div class="font-bold text-green-700" id="kasirSetoran">Rp 0</div>
+            </div>
+          </div>
+          <div class="md:col-span-2">
+            <button type="submit" class="btn-primary w-full">💾 Simpan Transaksi</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3 class="font-bold text-gray-700 mb-3">Transaksi Hari Ini</h3>
+        <div class="overflow-x-auto">
+          <table id="tabelKasir">
+            <thead>
+              <tr>
+                <th>Waktu</th>
+                <th>Konsinyator</th>
+                <th>Produk</th>
+                <th>Qty</th>
+                <th>Total</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB PRODUK -->
+    <div id="tabProduk" class="tab-content hidden">
+      <div class="card mb-4">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-gray-800">Kelola Produk</h2>
+          <button onclick="tambahProduk()" class="btn-primary">+ Tambah Produk</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table id="tabelProduk">
+            <thead>
+              <tr>
+                <th>Nama Produk</th>
+                <th>Konsinyator</th>
+                <th>Harga</th>
+                <th>Stok Awal</th>
+                <th>Stok Sisa</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB KONSINYATOR -->
+    <div id="tabKonsinyator" class="tab-content hidden">
+      <div class="card">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-gray-800">Kelola Konsinyator</h2>
+          <button onclick="tambahKonsinyator()" class="btn-primary">+ Tambah Konsinyator</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table id="tabelKonsinyator">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>No HP</th>
+                <th>Tgl Daftar</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB LAPORAN -->
+    <div id="tabLaporan" class="tab-content hidden">
+      <div class="card mb-4">
+        <div class="flex items-center gap-3 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+            <input type="date" id="laporanTanggal" class="w-auto"/>
+          </div>
+          <div class="flex items-end">
+            <button onclick="loadLaporan()" class="btn-primary">Lihat Laporan</button>
+          </div>
+        </div>
+        <div id="laporanContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOKEN = 'sp_tk_' + btoa('admin:sarapanpagi2024');
+const fmt = n => 'Rp ' + (n||0).toLocaleString('id-ID');
+let allKonsinyator = [];
+let allProduk = [];
+
+// AUTH
+function checkAuth() {
+  if (localStorage.getItem('sp_token') === TOKEN) {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    init();
+  } else {
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('dashboard').classList.add('hidden');
+  }
+}
+
+function login(e) {
+  e.preventDefault();
+  const user = document.getElementById('username').value;
+  const pass = document.getElementById('password').value;
+  if (user === 'admin' && pass === 'sarapanpagi2024') {
+    localStorage.setItem('sp_token', TOKEN);
+    checkAuth();
+  } else {
+    alert('Username atau password salah');
+  }
+}
+
+function logout() {
+  if (confirm('Yakin logout?')) {
+    localStorage.removeItem('sp_token');
+    checkAuth();
+  }
+}
+
+// INIT
+async function init() {
+  await loadKonsinyator();
+  await loadProduk();
+  loadKasir();
+  document.getElementById('kasirTanggal').value = new Date().toISOString().slice(0,10);
+  document.getElementById('laporanTanggal').value = new Date().toISOString().slice(0,10);
+}
+
+async function loadKonsinyator() {
+  const res = await fetch('/api/konsinyator');
+  allKonsinyator = await res.json();
+  
+  const sel = document.getElementById('kasirKonsinyator');
+  sel.innerHTML = '<option value="">-- Pilih --</option>' +
+    allKonsinyator.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('');
+  
+  renderKonsinyator();
+}
+
+async function loadProduk() {
+  const res = await fetch('/api/produk');
+  allProduk = await res.json();
+  renderProduk();
+}
+
+// TAB SWITCH
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('hidden'));
+  document.querySelector(`.tab:nth-child(${['kasir','produk','konsinyator','laporan'].indexOf(tab)+1})`).classList.add('active');
+  document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.remove('hidden');
+  
+  if (tab === 'kasir') loadKasir();
+  else if (tab === 'laporan') loadLaporan();
+}
+
+// KASIR
+function loadProdukKasir() {
+  const kid = document.getElementById('kasirKonsinyator').value;
+  const sel = document.getElementById('kasirProduk');
+  const produk = allProduk.filter(p=>p.konsinyator_id===kid);
+  sel.innerHTML = '<option value="">-- Pilih --</option>' +
+    produk.map(p=>`<option value="${p.id}" data-harga="${p.harga}">${p.nama} - ${fmt(p.harga)}</option>`).join('');
+  kalkulasiKasir();
+}
+
+function kalkulasiKasir() {
+  const sel = document.getElementById('kasirProduk');
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt || !opt.value) { document.getElementById('kasirTotal').textContent = fmt(0); document.getElementById('kasirBagiHasil').textContent = fmt(0); document.getElementById('kasirSetoran').textContent = fmt(0); return; }
+  const harga = parseInt(opt.dataset.harga || 0);
+  const qty = parseInt(document.getElementById('kasirQty').value || 0);
+  const total = harga * qty;
+  const bagiHasil = Math.round(total * 0.1);
+  const setoran = total - bagiHasil;
+  document.getElementById('kasirTotal').textContent = fmt(total);
+  document.getElementById('kasirBagiHasil').textContent = fmt(bagiHasil);
+  document.getElementById('kasirSetoran').textContent = fmt(setoran);
+}
+
+async function simpanTransaksi(e) {
+  e.preventDefault();
+  const kid = document.getElementById('kasirKonsinyator').value;
+  const pid = document.getElementById('kasirProduk').value;
+  const qty = parseInt(document.getElementById('kasirQty').value);
+  const tgl = document.getElementById('kasirTanggal').value;
+  
+  const produk = allProduk.find(p=>p.id===pid);
+  if (!produk) return;
+  
+  const total = produk.harga * qty;
+  const bagiHasil = Math.round(total * 0.1);
+  const setoran = total - bagiHasil;
+  
+  await fetch('/api/transaksi', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      produk_id: pid,
+      konsinyator_id: kid,
+      qty, harga: produk.harga, total, bagi_hasil: bagiHasil, setoran, tanggal: tgl, paid: 0
+    })
+  });
+  
+  alert('Transaksi disimpan!');
+  e.target.reset();
+  document.getElementById('kasirTanggal').value = new Date().toISOString().slice(0,10);
+  kalkulasiKasir();
+  loadKasir();
+}
+
+async function loadKasir() {
+  const today = new Date().toISOString().slice(0,10);
+  const res = await fetch(`/api/transaksi?tanggal=${today}`);
+  const data = await res.json();
+  
+  const tbody = document.querySelector('#tabelKasir tbody');
+  tbody.innerHTML = data.map(t=>`
+    <tr>
+      <td>${t.created_at?.slice(11,16) || '-'}</td>
+      <td>${t.konsinyator_nama || '-'}</td>
+      <td>${t.produk_nama || '-'}</td>
+      <td>${t.qty}</td>
+      <td>${fmt(t.total)}</td>
+      <td>
+        <button onclick="hapusTransaksi('${t.id}')" class="btn-danger text-xs py-1 px-2">Hapus</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function hapusTransaksi(id) {
+  if (!confirm('Hapus transaksi ini?')) return;
+  await fetch(`/api/transaksi/${id}`, {method:'DELETE'});
+  loadKasir();
+}
+
+// PRODUK
+function renderProduk() {
+  const tbody = document.querySelector('#tabelProduk tbody');
+  tbody.innerHTML = allProduk.map(p=>`
+    <tr>
+      <td>${p.nama}</td>
+      <td>${p.konsinyator_nama || '-'}</td>
+      <td>${fmt(p.harga)}</td>
+      <td>${p.stok_awal||0}</td>
+      <td>${p.stok_sisa||0}</td>
+      <td>
+        <button onclick="editProduk('${p.id}')" class="btn-secondary text-xs py-1 px-2 mr-1">Edit</button>
+        <button onclick="hapusProduk('${p.id}')" class="btn-danger text-xs py-1 px-2">Hapus</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function tambahProduk() {
+  const nama = prompt('Nama Produk:');
+  if (!nama) return;
+  const kid = prompt('Konsinyator ID (cek tabel):');
+  const harga = prompt('Harga:');
+  const stokAwal = prompt('Stok Awal:', '0');
+  
+  fetch('/api/produk', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({konsinyator_id:kid, nama, harga:parseInt(harga), stok_awal:parseInt(stokAwal)||0, stok_sisa:parseInt(stokAwal)||0})
+  }).then(()=>{alert('Produk ditambahkan!'); loadProduk();});
+}
+
+function editProduk(id) {
+  const p = allProduk.find(x=>x.id===id);
+  if (!p) return;
+  const nama = prompt('Nama:', p.nama);
+  const harga = prompt('Harga:', p.harga);
+  const stokAwal = prompt('Stok Awal:', p.stok_awal||0);
+  const stokSisa = prompt('Stok Sisa:', p.stok_sisa||0);
+  
+  fetch(`/api/produk/${id}`, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({konsinyator_id:p.konsinyator_id, nama, harga:parseInt(harga), stok_awal:parseInt(stokAwal), stok_sisa:parseInt(stokSisa)})
+  }).then(()=>{alert('Produk diupdate!'); loadProduk();});
+}
+
+async function hapusProduk(id) {
+  if (!confirm('Hapus produk ini?')) return;
+  await fetch(`/api/produk/${id}`, {method:'DELETE'});
+  loadProduk();
+}
+
+// KONSINYATOR
+function renderKonsinyator() {
+  const tbody = document.querySelector('#tabelKonsinyator tbody');
+  tbody.innerHTML = allKonsinyator.map(k=>`
+    <tr>
+      <td>${k.nama}</td>
+      <td>${k.hp}</td>
+      <td>${k.created_at}</td>
+      <td>
+        <button onclick="editKonsinyator('${k.id}')" class="btn-secondary text-xs py-1 px-2 mr-1">Edit</button>
+        <button onclick="hapusKonsinyator('${k.id}')" class="btn-danger text-xs py-1 px-2">Hapus</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function tambahKonsinyator() {
+  const nama = prompt('Nama Konsinyator:');
+  if (!nama) return;
+  const hp = prompt('No HP:');
+  
+  fetch('/api/konsinyator', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({nama, hp})
+  }).then(()=>{alert('Konsinyator ditambahkan!'); loadKonsinyator();});
+}
+
+function editKonsinyator(id) {
+  const k = allKonsinyator.find(x=>x.id===id);
+  if (!k) return;
+  const nama = prompt('Nama:', k.nama);
+  const hp = prompt('No HP:', k.hp);
+  
+  fetch(`/api/konsinyator/${id}`, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({nama, hp})
+  }).then(()=>{alert('Konsinyator diupdate!'); loadKonsinyator();});
+}
+
+async function hapusKonsinyator(id) {
+  if (!confirm('Hapus konsinyator ini?')) return;
+  await fetch(`/api/konsinyator/${id}`, {method:'DELETE'});
+  loadKonsinyator();
+}
+
+// LAPORAN
+async function loadLaporan() {
+  const tgl = document.getElementById('laporanTanggal').value;
+  const res = await fetch(`/api/ringkasan?tanggal=${tgl}`);
+  const data = await res.json();
+  
+  const div = document.getElementById('laporanContent');
+  div.innerHTML = `
+    <div class="overflow-x-auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Konsinyator</th>
+            <th>Jml Transaksi</th>
+            <th>Total Penjualan</th>
+            <th>Bagi Hasil (10%)</th>
+            <th>Setoran (90%)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.konsinyator.map(k=>`
+            <tr>
+              <td>${k.nama}</td>
+              <td>${k.jml_transaksi||0}</td>
+              <td>${fmt(k.total_penjualan||0)}</td>
+              <td>${fmt(k.total_bagi_hasil||0)}</td>
+              <td class="font-bold text-green-700">${fmt(k.total_setoran||0)}</td>
+              <td>
+                <span class="text-xs ${k.belum_bayar>0?'text-red-600':'text-green-600'}">${k.belum_bayar>0?'Belum Lunas':'Lunas'}</span>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+        <tfoot>
+          <tr style="border-top:2px solid #e5e7eb;font-weight:bold">
+            <td>TOTAL</td>
+            <td>${data.konsinyator.reduce((a,k)=>a+(k.jml_transaksi||0),0)}</td>
+            <td>${fmt(data.totals.total_penjualan)}</td>
+            <td>${fmt(data.totals.total_bagi_hasil)}</td>
+            <td class="text-green-700">${fmt(data.totals.total_setoran)}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  `;
+}
+
+checkAuth();
+</script>
+</body>
+</html>
