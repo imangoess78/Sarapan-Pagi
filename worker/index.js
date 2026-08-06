@@ -58,8 +58,21 @@ export default {
       const mKons = path.match(/^\/api\/konsinyator\/([^/]+)$/);
       if (mKons) {
         const id = mKons[1];
+        if (method === 'PUT') {
+          const { nama, hp } = await request.json();
+          if (!nama || !hp) return json({ error: 'nama & hp wajib' }, 400);
+          await DB.prepare(
+            'UPDATE konsinyator SET nama=?, hp=? WHERE id=?'
+          ).bind(nama.trim(), hp.trim(), id).run();
+          return json({ ok: true });
+        }
         if (method === 'DELETE') {
-          await DB.prepare('DELETE FROM konsinyator WHERE id=?').bind(id).run();
+          // Cascade: hapus produk & transaksi terkait
+          await DB.batch([
+            DB.prepare('DELETE FROM transaksi WHERE konsinyator_id=?').bind(id),
+            DB.prepare('DELETE FROM produk WHERE konsinyator_id=?').bind(id),
+            DB.prepare('DELETE FROM konsinyator WHERE id=?').bind(id),
+          ]);
           return json({ ok: true });
         }
       }
@@ -88,15 +101,29 @@ export default {
       const mProd = path.match(/^\/api\/produk\/([^/]+)$/);
       if (mProd) {
         const id = mProd[1];
+        if (method === 'GET') {
+          const row = await DB.prepare('SELECT * FROM produk WHERE id=?').bind(id).first();
+          if (!row) return json({ error: 'tidak ditemukan' }, 404);
+          return json(row);
+        }
         if (method === 'PUT') {
-          const { nama, harga, stok_sisa } = await request.json();
-          await DB.prepare(
-            'UPDATE produk SET nama=?, harga=?, stok_sisa=? WHERE id=?'
-          ).bind(nama, Number(harga), Number(stok_sisa), id).run();
+          const { nama, harga, stok_sisa, stok_awal } = await request.json();
+          if (stok_awal !== undefined) {
+            await DB.prepare(
+              'UPDATE produk SET nama=?, harga=?, stok_awal=?, stok_sisa=? WHERE id=?'
+            ).bind(nama, Number(harga), Number(stok_awal), Number(stok_sisa), id).run();
+          } else {
+            await DB.prepare(
+              'UPDATE produk SET nama=?, harga=?, stok_sisa=? WHERE id=?'
+            ).bind(nama, Number(harga), Number(stok_sisa), id).run();
+          }
           return json({ ok: true });
         }
         if (method === 'DELETE') {
-          await DB.prepare('DELETE FROM produk WHERE id=?').bind(id).run();
+          await DB.batch([
+            DB.prepare('DELETE FROM transaksi WHERE produk_id=?').bind(id),
+            DB.prepare('DELETE FROM produk WHERE id=?').bind(id),
+          ]);
           return json({ ok: true });
         }
       }
@@ -129,11 +156,28 @@ export default {
         }
       }
 
-      const mTrx = path.match(/^\/api\/transaksi\/([^/]+)\/paid$/);
-      if (mTrx && method === 'PATCH') {
-        const konsinyator_id = mTrx[1];
+      const mTrxPaid = path.match(/^\/api\/transaksi\/([^/]+)\/paid$/);
+      if (mTrxPaid && method === 'PATCH') {
+        const konsinyator_id = mTrxPaid[1];
         await DB.prepare('UPDATE transaksi SET paid=1 WHERE konsinyator_id=? AND paid=0').bind(konsinyator_id).run();
         return json({ ok: true });
+      }
+
+      const mTrx = path.match(/^\/api\/transaksi\/([^/]+)$/);
+      if (mTrx) {
+        const id = mTrx[1];
+        if (method === 'DELETE') {
+          // Kembalikan stok ketika transaksi dihapus
+          const trx = await DB.prepare('SELECT * FROM transaksi WHERE id=?').bind(id).first();
+          if (trx) {
+            await DB.batch([
+              DB.prepare('UPDATE produk SET stok_sisa=stok_sisa+?, terjual=terjual-? WHERE id=?')
+                .bind(trx.qty, trx.qty, trx.produk_id),
+              DB.prepare('DELETE FROM transaksi WHERE id=?').bind(id),
+            ]);
+          }
+          return json({ ok: true });
+        }
       }
 
       // ── PESANAN ──────────────────────────────────────────────────────────
@@ -155,12 +199,28 @@ export default {
         }
       }
 
-      const mPes = path.match(/^\/api\/pesanan\/([^/]+)\/status$/);
-      if (mPes && method === 'PATCH') {
-        const id = mPes[1];
+      const mPesStatus = path.match(/^\/api\/pesanan\/([^/]+)\/status$/);
+      if (mPesStatus && method === 'PATCH') {
+        const id = mPesStatus[1];
         const { status } = await request.json();
         await DB.prepare('UPDATE pesanan SET status=? WHERE id=?').bind(status, id).run();
         return json({ ok: true });
+      }
+
+      const mPes = path.match(/^\/api\/pesanan\/([^/]+)$/);
+      if (mPes) {
+        const id = mPes[1];
+        if (method === 'DELETE') {
+          await DB.prepare('DELETE FROM pesanan WHERE id=?').bind(id).run();
+          return json({ ok: true });
+        }
+        if (method === 'PUT') {
+          const { customer_name, wa, product_name, qty, catatan } = await request.json();
+          await DB.prepare(
+            'UPDATE pesanan SET customer_name=?, wa=?, product_name=?, qty=?, catatan=? WHERE id=?'
+          ).bind(customer_name.trim(), (wa||'').trim(), product_name.trim(), Number(qty)||1, (catatan||'').trim(), id).run();
+          return json({ ok: true });
+        }
       }
 
       return json({ error: 'not found' }, 404);
