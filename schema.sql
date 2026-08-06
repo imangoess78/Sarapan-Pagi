@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS produk (
   konsinyator_id TEXT NOT NULL,
   nama TEXT NOT NULL,
   harga INTEGER NOT NULL,
+  stok_awal INTEGER NOT NULL DEFAULT 0,
+  stok_sisa INTEGER NOT NULL DEFAULT 0,
+  terjual INTEGER NOT NULL DEFAULT 0,
   FOREIGN KEY (konsinyator_id) REFERENCES konsinyator(id) ON DELETE CASCADE
 );
 
@@ -30,6 +33,19 @@ CREATE TABLE IF NOT EXISTS transaksi (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS pesanan (
+  id TEXT PRIMARY KEY,
+  customer_name TEXT NOT NULL,
+  wa TEXT,
+  product_name TEXT NOT NULL,
+  qty INTEGER NOT NULL DEFAULT 1,
+  catatan TEXT,
+  status TEXT NOT NULL DEFAULT 'baru',
+  tanggal TEXT NOT NULL DEFAULT (date('now')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_transaksi_tanggal ON transaksi(tanggal);
 CREATE INDEX IF NOT EXISTS idx_transaksi_konsinyator ON transaksi(konsinyator_id);
 CREATE INDEX IF NOT EXISTS idx_produk_konsinyator ON produk(konsinyator_id);
+CREATE INDEX IF NOT EXISTS idx_pesanan_tanggal ON pesanan(tanggal);
