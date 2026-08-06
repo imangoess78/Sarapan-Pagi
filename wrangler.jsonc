@@ -1,0 +1,22 @@
+{
+  // Cloudflare Worker — Lapak Jajan Sarapan Pagi Bintaro
+  "name": "sarapan-pagi",
+  "main": "worker/index.js",
+  "compatibility_date": "2024-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // D1 Database binding
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sarapan-pagi-db",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+    }
+  ],
+
+  // Static assets (HTML frontend)
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  }
+}

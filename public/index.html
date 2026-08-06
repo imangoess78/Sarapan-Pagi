@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Lapak Jajan Sarapan Pagi Bintaro</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+  body{background:#f8fafc;font-family:'Segoe UI',sans-serif}
+  .tab-active{border-bottom:3px solid #f97316;color:#f97316;font-weight:600}
+  .card{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .btn{border-radius:8px;padding:8px 16px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:.15s}
+  .btn-primary{background:#f97316;color:#fff} .btn-primary:hover{background:#ea6c0a}
+  .btn-green{background:#22c55e;color:#fff} .btn-green:hover{background:#16a34a}
+  .btn-red{background:#ef4444;color:#fff} .btn-red:hover{background:#dc2626}
+  .btn-outline{background:#fff;border:1px solid #d1d5db;color:#374151} .btn-outline:hover{background:#f9fafb}
+  .badge-paid{background:#dcfce7;color:#166534;border-radius:999px;padding:2px 10px;font-size:12px}
+  .badge-unpaid{background:#fee2e2;color:#991b1b;border-radius:999px;padding:2px 10px;font-size:12px}
+  input,select{border:1px solid #d1d5db;border-radius:8px;padding:8px 12px;font-size:14px;width:100%;outline:none}
+  input:focus,select:focus{border-color:#f97316;box-shadow:0 0 0 2px #fed7aa}
+  .toast{position:fixed;bottom:24px;right:24px;background:#1f2937;color:#fff;padding:12px 20px;border-radius:10px;z-index:999;font-size:14px}
+  @media(max-width:640px){.hide-mobile{display:none}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback} = React;
+
+// ─── API ──────────────────────────────────────────────────────
+const BASE = '';
+const api = {
+  get: (p) => fetch(BASE+p).then(r=>r.json()),
+  post: (p,b) => fetch(BASE+p,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(r=>r.json()),
+  put: (p,b) => fetch(BASE+p,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(r=>r.json()),
+  del: (p) => fetch(BASE+p,{method:'DELETE'}).then(r=>r.json()),
+};
+
+// ─── FORMAT ───────────────────────────────────────────────────
+const fmt = (n) => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(n||0);
+const today = () => new Date().toISOString().slice(0,10);
+
+// ─── TOAST ────────────────────────────────────────────────────
+function Toast({msg,onHide}){
+  useEffect(()=>{const t=setTimeout(onHide,2500);return()=>clearTimeout(t)},[]);
+  return <div className="toast">{msg}</div>;
+}
+
+// ─── QR MODAL ─────────────────────────────────────────────────
+function QRModal({hp,nama,onClose}){
+  const canvasRef=useRef();
+  useEffect(()=>{
+    if(canvasRef.current&&hp){
+      const danaUrl=`https://qr.dana.id/p2p?phone=${hp}`;
+      QRCode.toCanvas(canvasRef.current,danaUrl,{width:200,margin:2});
+    }
+  },[hp]);
+  return(
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="card p-6 text-center" onClick={e=>e.stopPropagation()}>
+        <h3 className="font-bold text-lg mb-1">DANA — {nama}</h3>
+        <p className="text-gray-500 text-sm mb-4">{hp}</p>
+        <canvas ref={canvasRef}/>
+        <p className="text-xs text-gray-400 mt-3">Scan untuk transfer via DANA</p>
+        <button className="btn btn-outline mt-4 w-full" onClick={onClose}>Tutup</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── MODAL WRAPPER ────────────────────────────────────────────
+function Modal({title,onClose,children}){
+  return(
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold text-lg">{title}</h3>
+          <button className="text-gray-400 hover:text-gray-700 text-xl" onClick={onClose}>✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─── TAB: DASHBOARD ───────────────────────────────────────────
+function Dashboard({toast}){
+  const [data,setData]=useState(null);
+  const [tgl,setTgl]=useState(today());
+  const [qr,setQr]=useState(null);
+  const [ringkasan,setRingkasan]=useState('');
+
+  const load=useCallback(()=>{
+    api.get(`/api/ringkasan?tanggal=${tgl}`).then(setData);
+  },[tgl]);
+  useEffect(()=>{load()},[load]);
+
+  const togglePaid=(k)=>{
+    api.get(`/api/transaksi?tanggal=${tgl}&konsinyator_id=${k.id}`).then(async(rows)=>{
+      const unpaid=rows.filter(r=>!r.paid);
+      await Promise.all(unpaid.map(r=>api.put(`/api/transaksi/${r.id}`,{paid:true})));
+      load(); toast('Semua setoran ditandai lunas ✅');
+    });
+  };
+
+  const salinRingkasan=()=>{
+    if(!data) return;
+    const lines=[`📋 Ringkasan Lapak — ${data.tanggal}`,`Total Penjualan : ${fmt(data.totals.total_penjualan)}`,`Bagi Hasil Lapak: ${fmt(data.totals.total_bagi_hasil)}`,`Total Setoran  : ${fmt(data.totals.total_setoran)}`,`Sudah Bayar    : ${fmt(data.totals.sudah_bayar)}`,`Belum Bayar    : ${fmt(data.totals.belum_bayar)}`,'',`Detail Konsinyator:`];
+    data.konsinyator.forEach(k=>{
+      lines.push(`• ${k.nama} (${k.hp})`);
+      lines.push(`  Penjualan: ${fmt(k.total_penjualan)} | Setoran: ${fmt(k.total_setoran)} | ${k.belum_bayar>0?'⏳ Belum lunas':'✅ Lunas'}`);
+    });
+    const txt=lines.join('\n');
+    setRingkasan(txt);
+    navigator.clipboard.writeText(txt).then(()=>toast('Ringkasan disalin 📋'));
+  };
+
+  const exportCSV=()=>{
+    if(!data) return;
+    const rows=[['Tanggal','Konsinyator','HP','Total Penjualan','Bagi Hasil','Setoran','Sudah Bayar','Belum Bayar']];
+    data.konsinyator.forEach(k=>{
+      rows.push([data.tanggal,k.nama,k.hp,k.total_penjualan||0,k.total_bagi_hasil||0,k.total_setoran||0,k.sudah_bayar||0,k.belum_bayar||0]);
+    });
+    const csv=rows.map(r=>r.join(',')).join('\n');
+    const a=document.createElement('a');
+    a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+    a.download=`ringkasan-${tgl}.csv`;
+    a.click();
+    toast('CSV diunduh 📊');
+  };
+
+  if(!data) return <div className="p-8 text-center text-gray-400">Loading...</div>;
+
+  return(
+    <div className="p-4 max-w-2xl mx-auto">
+      {qr&&<QRModal hp={qr.hp} nama={qr.nama} onClose={()=>setQr(null)}/>}
+      <div className="flex gap-3 mb-4 items-center flex-wrap">
+        <input type="date" value={tgl} onChange={e=>setTgl(e.target.value)} className="w-auto"/>
+        <button className="btn btn-outline" onClick={salinRingkasan}>📋 Salin Ringkasan</button>
+        <button className="btn btn-outline" onClick={exportCSV}>📊 Export CSV</button>
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        {[
+          {label:'Total Penjualan',val:data.totals.total_penjualan,color:'text-blue-600'},
+          {label:'Bagi Hasil Lapak',val:data.totals.total_bagi_hasil,color:'text-orange-500'},
+          {label:'Total Setoran',val:data.totals.total_setoran,color:'text-purple-600'},
+          {label:'Belum Lunas',val:data.totals.belum_bayar,color:'text-red-500'},
+        ].map(c=>(
+          <div key={c.label} className="card p-4">
+            <p className="text-xs text-gray-400">{c.label}</p>
+            <p className={`font-bold text-lg ${c.color}`}>{fmt(c.val)}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Per-konsinyator */}
+      {data.konsinyator.map(k=>(
+        <div key={k.id} className="card p-4 mb-3">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="font-semibold">{k.nama}</p>
+              <p className="text-sm text-gray-400">{k.hp}</p>
+            </div>
+            <div className="flex gap-2">
+              <button className="btn btn-outline text-xs" onClick={()=>setQr({hp:k.hp,nama:k.nama})}>📱 QR DANA</button>
+              {k.belum_bayar>0&&<button className="btn btn-green text-xs" onClick={()=>togglePaid(k)}>✅ Lunas</button>}
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 mt-3 text-center">
+            <div><p className="text-xs text-gray-400">Penjualan</p><p className="font-bold text-sm text-blue-600">{fmt(k.total_penjualan)}</p></div>
+            <div><p className="text-xs text-gray-400">Setoran</p><p className="font-bold text-sm text-purple-600">{fmt(k.total_setoran)}</p></div>
+            <div><p className="text-xs text-gray-400">Status</p>
+              {k.belum_bayar>0
+                ?<span className="badge-unpaid">⏳ {fmt(k.belum_bayar)}</span>
+                :<span className="badge-paid">✅ Lunas</span>
+              }
+            </div>
+          </div>
+        </div>
+      ))}
+      {ringkasan&&<pre className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 mt-2 whitespace-pre-wrap">{ringkasan}</pre>}
+    </div>
+  );
+}
+
+// ─── TAB: TRANSAKSI ───────────────────────────────────────────
+function Transaksi({toast}){
+  const [list,setList]=useState([]);
+  const [produkAll,setProdukAll]=useState([]);
+  const [konsAll,setKonsAll]=useState([]);
+  const [tgl,setTgl]=useState(today());
+  const [form,setForm]=useState({produk_id:'',qty:1});
+  const [edit,setEdit]=useState(null);
+
+  const load=useCallback(()=>{
+    api.get(`/api/transaksi?tanggal=${tgl}`).then(setList);
+  },[tgl]);
+  useEffect(()=>{load()},[load]);
+  useEffect(()=>{
+    api.get('/api/produk').then(setProdukAll);
+    api.get('/api/konsinyator').then(setKonsAll);
+  },[]);
+
+  const selProduk=produkAll.find(p=>p.id===form.produk_id);
+
+  const submit=async(e)=>{
+    e.preventDefault();
+    if(!selProduk){toast('Pilih produk dulu'); return;}
+    await api.post('/api/transaksi',{produk_id:selProduk.id,konsinyator_id:selProduk.konsinyator_id,qty:Number(form.qty),harga:selProduk.harga});
+    setForm({produk_id:'',qty:1});
+    load(); toast('Transaksi ditambah ✅');
+  };
+
+  const hapus=async(id)=>{
+    if(!confirm('Hapus transaksi ini?')) return;
+    await api.del(`/api/transaksi/${id}`);
+    load(); toast('Transaksi dihapus');
+  };
+
+  const togglePaid=async(t)=>{
+    await api.put(`/api/transaksi/${t.id}`,{paid:!t.paid});
+    load();
+  };
+
+  return(
+    <div className="p-4 max-w-2xl mx-auto">
+      <div className="card p-4 mb-4">
+        <h3 className="font-semibold mb-3">+ Tambah Transaksi</h3>
+        <form onSubmit={submit} className="flex flex-col gap-3">
+          <select value={form.produk_id} onChange={e=>setForm(f=>({...f,produk_id:e.target.value}))} required>
+            <option value="">-- Pilih Produk --</option>
+            {konsAll.map(k=>(
+              <optgroup key={k.id} label={k.nama}>
+                {produkAll.filter(p=>p.konsinyator_id===k.id).map(p=>(
+                  <option key={p.id} value={p.id}>{p.nama} — {fmt(p.harga)}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <div className="flex gap-3">
+            <input type="number" min="1" value={form.qty} onChange={e=>setForm(f=>({...f,qty:e.target.value}))} placeholder="Qty" required className="w-24"/>
+            {selProduk&&<div className="flex-1 bg-orange-50 rounded-lg p-2 text-sm">
+              <span className="text-gray-500">Total: </span>
+              <span className="font-bold text-orange-600">{fmt(selProduk.harga*Number(form.qty))}</span>
+              <span className="text-gray-400 ml-2">• Setoran: {fmt(selProduk.harga*Number(form.qty)*0.9)}</span>
+            </div>}
+          </div>
+          <button type="submit" className="btn btn-primary">Tambah Transaksi</button>
+        </form>
+      </div>
+
+      <div className="flex gap-3 mb-3 items-center">
+        <input type="date" value={tgl} onChange={e=>setTgl(e.target.value)} className="w-auto"/>
+        <span className="text-sm text-gray-400">{list.length} transaksi</span>
+      </div>
+
+      {list.length===0&&<div className="text-center text-gray-400 py-8">Tidak ada transaksi hari ini</div>}
+      {list.map(t=>(
+        <div key={t.id} className="card p-3 mb-2 flex justify-between items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-sm truncate">{t.produk_nama}</p>
+            <p className="text-xs text-gray-400">{t.konsinyator_nama} • {t.qty}x {fmt(t.harga)}</p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="font-bold text-sm">{fmt(t.total)}</p>
+            <p className="text-xs text-gray-400">Setoran: {fmt(t.setoran)}</p>
+          </div>
+          <div className="flex flex-col gap-1">
+            <button onClick={()=>togglePaid(t)} className={`btn text-xs py-1 ${t.paid?'badge-paid':'badge-unpaid'}`} style={{padding:'2px 8px'}}>
+              {t.paid?'✅ Lunas':'⏳ Unpaid'}
+            </button>
+            <button onClick={()=>hapus(t.id)} className="btn btn-red text-xs py-1">🗑</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── TAB: PRODUK ─────────────────────────────────────────────
+function Produk({toast}){
+  const [list,setList]=useState([]);
+  const [kons,setKons]=useState([]);
+  const [form,setForm]=useState({nama:'',harga:'',konsinyator_id:''});
+  const [edit,setEdit]=useState(null);
+
+  const load=()=>{
+    api.get('/api/produk').then(setList);
+    api.get('/api/konsinyator').then(setKons);
+  };
+  useEffect(()=>{load()},[]);
+
+  const submit=async(e)=>{
+    e.preventDefault();
+    if(edit){
+      await api.put(`/api/produk/${edit.id}`,form);
+      setEdit(null); toast('Produk diupdate ✅');
+    } else {
+      await api.post('/api/produk',form);
+      toast('Produk ditambah ✅');
+    }
+    setForm({nama:'',harga:'',konsinyator_id:''}); load();
+  };
+
+  const hapus=async(id)=>{
+    if(!confirm('Hapus produk ini?')) return;
+    await api.del(`/api/produk/${id}`);
+    load(); toast('Produk dihapus');
+  };
+
+  const startEdit=(p)=>{
+    setEdit(p);
+    setForm({nama:p.nama,harga:p.harga,konsinyator_id:p.konsinyator_id});
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+
+  return(
+    <div className="p-4 max-w-2xl mx-auto">
+      <div className="card p-4 mb-4">
+        <h3 className="font-semibold mb-3">{edit?`Edit: ${edit.nama}`:'+ Tambah Produk'}</h3>
+        <form onSubmit={submit} className="flex flex-col gap-3">
+          <select value={form.konsinyator_id} onChange={e=>setForm(f=>({...f,konsinyator_id:e.target.value}))} required>
+            <option value="">-- Pilih Konsinyator --</option>
+            {kons.map(k=><option key={k.id} value={k.id}>{k.nama}</option>)}
+          </select>
+          <input value={form.nama} onChange={e=>setForm(f=>({...f,nama:e.target.value}))} placeholder="Nama produk" required/>
+          <input type="number" value={form.harga} onChange={e=>setForm(f=>({...f,harga:e.target.value}))} placeholder="Harga (Rp)" required/>
+          <div className="flex gap-2">
+            <button type="submit" className="btn btn-primary flex-1">{edit?'Update':'Tambah'}</button>
+            {edit&&<button type="button" className="btn btn-outline" onClick={()=>{setEdit(null);setForm({nama:'',harga:'',konsinyator_id:''})}}>Batal</button>}
+          </div>
+        </form>
+      </div>
+
+      {kons.map(k=>(
+        <div key={k.id} className="mb-4">
+          <p className="text-sm font-semibold text-gray-500 mb-2 px-1">📦 {k.nama}</p>
+          {list.filter(p=>p.konsinyator_id===k.id).map(p=>(
+            <div key={p.id} className="card p-3 mb-2 flex justify-between items-center">
+              <div>
+                <p className="font-medium">{p.nama}</p>
+                <p className="text-sm text-orange-600 font-bold">{fmt(p.harga)}</p>
+              </div>
+              <div className="flex gap-2">
+                <button className="btn btn-outline text-xs" onClick={()=>startEdit(p)}>✏️</button>
+                <button className="btn btn-red text-xs" onClick={()=>hapus(p.id)}>🗑</button>
+              </div>
+            </div>
+          ))}
+          {list.filter(p=>p.konsinyator_id===k.id).length===0&&
+            <p className="text-sm text-gray-400 text-center py-3">Belum ada produk</p>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── TAB: KONSINYATOR ─────────────────────────────────────────
+function Konsinyator({toast}){
+  const [list,setList]=useState([]);
+  const [form,setForm]=useState({nama:'',hp:''});
+  const [edit,setEdit]=useState(null);
+  const [qr,setQr]=useState(null);
+
+  const load=()=>api.get('/api/konsinyator').then(setList);
+  useEffect(()=>{load()},[]);
+
+  const submit=async(e)=>{
+    e.preventDefault();
+    if(edit){
+      await api.put(`/api/konsinyator/${edit.id}`,form);
+      setEdit(null); toast('Konsinyator diupdate ✅');
+    } else {
+      await api.post('/api/konsinyator',form);
+      toast('Konsinyator ditambah ✅');
+    }
+    setForm({nama:'',hp:''}); load();
+  };
+
+  const hapus=async(id)=>{
+    if(!confirm('Hapus konsinyator dan semua data terkait?')) return;
+    await api.del(`/api/konsinyator/${id}`);
+    load(); toast('Konsinyator dihapus');
+  };
+
+  const startEdit=(k)=>{
+    setEdit(k); setForm({nama:k.nama,hp:k.hp});
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+
+  return(
+    <div className="p-4 max-w-2xl mx-auto">
+      {qr&&<QRModal hp={qr.hp} nama={qr.nama} onClose={()=>setQr(null)}/>}
+      <div className="card p-4 mb-4">
+        <h3 className="font-semibold mb-3">{edit?`Edit: ${edit.nama}`:'+ Tambah Konsinyator'}</h3>
+        <form onSubmit={submit} className="flex flex-col gap-3">
+          <input value={form.nama} onChange={e=>setForm(f=>({...f,nama:e.target.value}))} placeholder="Nama konsinyator" required/>
+          <input value={form.hp} onChange={e=>setForm(f=>({...f,hp:e.target.value}))} placeholder="No HP / DANA (08xx...)" required/>
+          <div className="flex gap-2">
+            <button type="submit" className="btn btn-primary flex-1">{edit?'Update':'Tambah'}</button>
+            {edit&&<button type="button" className="btn btn-outline" onClick={()=>{setEdit(null);setForm({nama:'',hp:''})}}>Batal</button>}
+          </div>
+        </form>
+      </div>
+
+      {list.map(k=>(
+        <div key={k.id} className="card p-4 mb-3">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="font-semibold">{k.nama}</p>
+              <p className="text-sm text-gray-400">📱 {k.hp}</p>
+              <p className="text-xs text-gray-300 mt-1">Sejak {k.created_at}</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <button className="btn btn-outline text-xs" onClick={()=>setQr({hp:k.hp,nama:k.nama})}>📱 QR DANA</button>
+              <button className="btn btn-outline text-xs" onClick={()=>startEdit(k)}>✏️ Edit</button>
+              <button className="btn btn-red text-xs" onClick={()=>hapus(k.id)}>🗑 Hapus</button>
+            </div>
+          </div>
+        </div>
+      ))}
+      {list.length===0&&<div className="text-center text-gray-400 py-8">Belum ada konsinyator</div>}
+    </div>
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────────────
+function App(){
+  const [tab,setTab]=useState('dashboard');
+  const [toast,setToast]=useState('');
+  const showToast=(msg)=>setToast(msg);
+  const TABS=[
+    {id:'dashboard',label:'📊 Dashboard'},
+    {id:'transaksi',label:'🧾 Transaksi'},
+    {id:'produk',label:'📦 Produk'},
+    {id:'konsinyator',label:'👤 Konsinyator'},
+  ];
+  return(
+    <div className="min-h-screen">
+      {toast&&<Toast msg={toast} onHide={()=>setToast('')}/>}
+      {/* Header */}
+      <div style={{background:'linear-gradient(135deg,#f97316,#fb923c)'}} className="text-white px-4 py-4 shadow">
+        <h1 className="font-bold text-xl">🍱 Lapak Jajan Sarapan Pagi</h1>
+        <p className="text-orange-100 text-sm">Bintaro — Sistem Manajemen Konsinyasi</p>
+      </div>
+      {/* Tabs */}
+      <div className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="flex overflow-x-auto">
+          {TABS.map(t=>(
+            <button key={t.id}
+              onClick={()=>setTab(t.id)}
+              className={`px-4 py-3 text-sm whitespace-nowrap border-b-2 transition-colors ${tab===t.id?'border-orange-500 text-orange-500 font-semibold':'border-transparent text-gray-500 hover:text-gray-700'}`}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* Content */}
+      <div className="pb-10">
+        {tab==='dashboard'&&<Dashboard toast={showToast}/>}
+        {tab==='transaksi'&&<Transaksi toast={showToast}/>}
+        {tab==='produk'&&<Produk toast={showToast}/>}
+        {tab==='konsinyator'&&<Konsinyator toast={showToast}/>}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

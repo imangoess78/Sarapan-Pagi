@@ -1,0 +1,23 @@
+{
+  "name": "sarapan-pagi",
+  "version": "1.0.0",
+  "description": "Lapak Jajan Sarapan Pagi Bintaro — Cloudflare Worker + D1",
+  "main": "worker/index.js",
+  "scripts": {
+    "dev": "npx wrangler dev",
+    "deploy": "npx wrangler deploy",
+    "db:create": "npx wrangler d1 create sarapan-pagi-db",
+    "db:schema": "npx wrangler d1 execute sarapan-pagi-db --remote --file=schema.sql",
+    "db:seed": "npx wrangler d1 execute sarapan-pagi-db --remote --file=seed.sql",
+    "db:schema:local": "npx wrangler d1 execute sarapan-pagi-db --local --file=schema.sql",
+    "db:seed:local": "npx wrangler d1 execute sarapan-pagi-db --local --file=seed.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3.99.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imangoess78/Sarapan-Pagi.git"
+  },
+  "license": "ISC"
+}
